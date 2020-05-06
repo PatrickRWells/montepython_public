@@ -138,7 +138,7 @@ class Data(object):
         multiplicity of the last accepted point.
         """
 
-        # Creation of the two main dictionnaries:
+        # Creation of the three main dictionnaries:
         self.cosmo_arguments = {}
         """
         Simple dictionary that will serve as a communication interface with the
@@ -147,6 +147,11 @@ class Data(object):
         :attr:`mcmc_parameters`.
 
         :rtype:   dict
+        """
+        self.param_options = {}
+        """
+        Simple dictionary that will hold options for parameters. Implemented
+        to allow parameters to be split across ell ranges for CMB likelihoods.
         """
         self.mcmc_parameters = od()
         """
@@ -169,7 +174,7 @@ class Data(object):
         :rtype: dict
         """
 
-        # Arguments for PyPolyChord 
+        # Arguments for PyPolyChord
         self.PC_param_names = []
         self.PC_arguments = {}
         """
@@ -211,7 +216,6 @@ class Data(object):
         # Read from the parameter file to fill properly the mcmc_parameters
         # dictionary.
         self.fill_mcmc_parameters()
-
         # Test if the recovered path agrees with the one extracted from
         # the configuration file.
         if self.path != {}:
@@ -367,6 +371,8 @@ class Data(object):
         # Log plotting parameter names file for compatibility with GetDist
         io_mp.log_parameter_names(self, command_line)
 
+
+
     def fill_mcmc_parameters(self):
         """
         Initializes the ordered dictionary :attr:`mcmc_parameters` from
@@ -380,6 +386,7 @@ class Data(object):
         # Define temporary quantities, only to simplify the input in the
         # parameter file
         self.parameters = od()
+        self.param_options = {}
 
         # Read from the parameter file everything
         try:
@@ -390,10 +397,10 @@ class Data(object):
                 "{0} does not point to a proper file".format(self.param))
         # In case the parameter file is a log.param, scan first once the file
         # to extract only the path dictionnary.
+
         if self.param.find('log.param') != -1:
             self.read_file(self.param, 'data', field='path')
         self.read_file(self.param, 'data')
-
         # Test here whether the number of parameters extracted correspond to
         # the number of lines (to make sure no doublon is present)
         number_of_parameters = sum(
@@ -413,6 +420,22 @@ class Data(object):
                 self.read_file(self.param, experiment, separate=True)
 
         # Finally create all the instances of the Parameter given the input.
+        if self.param_options:
+            if self.param_options['split']:
+                for key in self.param_options['split_params']:
+                    if key not in self.parameters:
+                        raise io_mp.ConfigurationError(
+                        "Parameter that was asked to be split "
+                        "was not included in the parameter file")
+                    else:
+                        split_param = self.parameters.pop(key)
+                        key_high = '_'.join([key, 'high'])
+                        key_low = '_'.join([key, 'low'])
+                        self.mcmc_parameters[key_high] = Parameter(split_param, key_high)
+                        self.mcmc_parameters[key_low] = Parameter(split_param, key_low)
+
+
+
         for key, value in dictitems(self.parameters):
             self.mcmc_parameters[key] = Parameter(value, key)
 
