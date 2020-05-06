@@ -12,6 +12,10 @@ import sys
 import os
 from io_mp import dictitems,dictvalues,dictkeys
 
+from theory import initialize_theory
+
+
+
 def initialise(custom_command=''):
     """
     Initialisation routine
@@ -171,18 +175,8 @@ def recover_cosmological_module(data):
                 "Please go to /path/to/class/python/ and do\n" +
                 "..]$ python setup.py build")
 
-        # Inserting the previously found path into the list of folders to
-        # search for python modules.
-        sys.path.insert(1, classy_path)
-        try:
-            from classy import Class
-        except ImportError:
-            raise io_mp.MissingLibraryError(
-                "You must have compiled the classy.pyx file. Please go to " +
-                "/path/to/class/python and run the command\n " +
-                "python setup.py build")
+        cosmo = initialize_theory(classy_path)
 
-        cosmo = Class()
     else:
         raise io_mp.ConfigurationError(
             "Unrecognised cosmological module. " +
