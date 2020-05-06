@@ -422,6 +422,7 @@ class Data(object):
         # Finally create all the instances of the Parameter given the input.
         if self.param_options:
             if self.param_options['split']:
+                self.cosmo_arguments['split'] = self.param_options['split']
                 for key in self.param_options['split_params']:
                     if key not in self.parameters:
                         raise io_mp.ConfigurationError(
@@ -800,6 +801,7 @@ class Data(object):
 
         """
         # For all elements in any cosmological parameters
+
         for elem in self.get_mcmc_parameters(['cosmo']):
             # Fill in the dictionnary with the current value of parameters
             self.cosmo_arguments[elem] = \

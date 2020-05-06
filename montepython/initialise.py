@@ -82,6 +82,14 @@ def initialise(custom_command=''):
         # Loading up the cosmological backbone. For the moment, only CLASS has been
         # wrapped.
         cosmo = recover_cosmological_module(data)
+        if data.param_options:
+            if data.param_options['split']:
+                if not data.param_options['split_ell']:
+                    raise io_mp.ConfigurationError(
+                        "You indicated you want to split parameters " +
+                        "but did not indicate what ell to use as the pivot")
+                else:
+                    cosmo.set_split(data.param_options['split_ell'])
 
         # Initialising the sampler
         # MH: Creating the file that will contain the chain

@@ -40,5 +40,35 @@ def Theory(base):
     class Theory(base):
         def __init__(self):
             super().__init__()
-    
+            self.split = False
+            self.split_ell = -1
+            self.low_params = {}
+            self.high_params = {} 
+
+        def set_split(self, split_ell):
+            self.split = True
+            self.split_ell = split_ell
+        def set(self, params):
+            if self.split:
+                for key, val in params.items():
+                    if 'high' in key:
+                        self.high_params.update({'_'.join(key.split('_')[:-1]): val})
+                    elif 'low' in key:
+                        self.low_params.update({'_'.join(key.split('_')[:-1]): val})
+                    else:
+                        self.low_params.update({key: val})
+                        self.high_params.update({key: val})
+
+                print(self.low_params)
+                print(self.high_params)
+                print("Don't know how to handle split params yet!")
+                exit()
+            else:
+                super().set(params)
+        def compute(self, spectra):
+            if self.split:
+                print("Don't know how to handle split params yet!")
+            else:
+                super().compute(spectra)
+
     return Theory()
