@@ -1,5 +1,6 @@
 import sys
 import io_mp
+import numpy as np
 
 
 
@@ -21,7 +22,7 @@ def initialize_theory(classy_path=''):
         '''
 
         # Inserting the previously found path into the list of folders to
-        # search for python modules.    
+        # search for python modules.
 
         sys.path.insert(1, classy_path)
         try:
@@ -43,12 +44,16 @@ def Theory(base):
             self.split = False
             self.split_ell = -1
             self.low_params = {}
-            self.high_params = {} 
+            self.high_params = {}
+            self.high_spectra = {}
+            self.low_spectra = {}
 
         def set_split(self, split_ell):
             self.split = True
             self.split_ell = split_ell
         def set(self, params):
+            if 'split' in params.keys():
+                params.pop('split')
             if self.split:
                 for key, val in params.items():
                     if 'high' in key:
@@ -58,17 +63,45 @@ def Theory(base):
                     else:
                         self.low_params.update({key: val})
                         self.high_params.update({key: val})
-
-                print(self.low_params)
-                print(self.high_params)
-                print("Don't know how to handle split params yet!")
-                exit()
             else:
                 super().set(params)
-        def compute(self, spectra):
+
+        def compute(self, level):
+
             if self.split:
-                print("Don't know how to handle split params yet!")
+                super().set(self.low_params)
+                super().compute(level)
+                self.low_spectra.update({'lensed': super().lensed_cl(), 'raw': super().raw_cl()})
+                super().struct_cleanup()
+                super().set(self.high_params)
+                super().compute(level)
+                self.high_spectra.update({'lensed': super().lensed_cl(), 'raw': super().raw_cl()})
             else:
-                super().compute(spectra)
+                super().compute(level)
+        def lensed_cl(self, lmax):
+            if self.split:
+                cls = {}
+                for key, spectra in self.low_spectra['lensed'].items():
+                    cls.update({key: np.append(spectra[:self.split_ell], self.high_spectra['lensed'][key][self.split_ell:])})
+                return cls
+            else:
+                return super().lensed_cl(lmax)
+        def raw_cl(self, lmax):
+            if self.split:
+                cls = {}
+                for key, spectra in self.low_spectra['raw'].items():
+                    cls.update({key: np.append(spectra[:self.split_ell], self.high_spectra['raw'][key][self.split_ell:])})
+                return cls
+            else:
+                return super().raw_cl(lmax)
+
+        def struct_cleanup(self):
+            if self.split:
+                self.low_params = {}
+                self.high_params = {}
+                self.high_spectra = {}
+                self.low_spectra = {}
+                
+            super().struct_cleanup()
 
     return Theory()
