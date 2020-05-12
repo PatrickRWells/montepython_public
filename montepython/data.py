@@ -12,6 +12,7 @@ import random as rd
 import warnings
 import subprocess as sp
 import re
+from copy import deepcopy
 
 import io_mp  # Needs to talk to io_mp.py file for the logging
                                # of parameters
@@ -138,7 +139,7 @@ class Data(object):
         multiplicity of the last accepted point.
         """
 
-        # Creation of the three main dictionnaries:
+        # Creation of the two main dictionnaries:
         self.cosmo_arguments = {}
         """
         Simple dictionary that will serve as a communication interface with the
@@ -429,13 +430,19 @@ class Data(object):
                         "Parameter that was asked to be split "
                         "was not included in the parameter file")
                     else:
-                        split_param = self.parameters.pop(key)
                         key_high = '_'.join([key, 'high'])
                         key_low = '_'.join([key, 'low'])
-                        self.mcmc_parameters[key_high] = Parameter(split_param, key_high)
-                        self.mcmc_parameters[key_low] = Parameter(split_param, key_low)
+                        new_params = od()
+                        new_parameters = od()
+                        for key2, val in self.parameters.items():
+                            if key2 != key:
+                                new_parameters[key2] = val
+                            else:
+                                new_parameters[key_low] = val
+                                new_parameters[key_high] = deepcopy(val)
 
-
+                        self.parameters = new_parameters
+                        print(self.parameters)
 
         for key, value in dictitems(self.parameters):
             self.mcmc_parameters[key] = Parameter(value, key)

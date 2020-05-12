@@ -48,13 +48,30 @@ def log_parameters(data, command_line):
     recopies entirely the input parameter file.
 
     """
+    split = data.param_options['split']
+
     with open(os.path.join(command_line.folder, 'log.param'), 'w') as log:
         log.write("#-----{0} {1} (branch: {2}, hash: {3})-----\n\n".format(
             data.cosmological_module_name, data.version,
             data.git_branch, data.git_version))
         with open(command_line.param, 'r') as param_file:
-            for line in param_file:
-                log.write(line)
+            if not split:
+                for line in param_file:
+                    log.write(line)
+            else:
+                for line in param_file:
+                    found_param = [param for param in data.param_options['split_params'] \
+                                    if param in line]
+                    if len(found_param) == 1:
+                        found_param = found_param[0]
+
+                    if not found_param:
+                        log.write(line)
+                    else:
+                        line1 = line.replace(found_param, '_'.join([found_param, 'low']))
+                        line2 = line.replace(found_param, '_'.join([found_param, 'high']))
+                        log.write(line1)
+                        log.write(line2)
 
 
 def log_likelihood_parameters(likelihood, command_line):
@@ -142,6 +159,7 @@ def log_parameter_names(data, command_line):
     log = open(os.path.join(command_line.folder, outname_base+'.paramnames'), 'w')
     # Create list of varying and derived parameters
     param = data.get_mcmc_parameters(['varying'])
+    print(param)
     for elem in data.get_mcmc_parameters(['derived']):
         param.append(elem)
     # New type of parameter, derived_lkl: this is a derived parameter calculated in the likelihood, and not known to CLASS. Added by D. C. Hooper
