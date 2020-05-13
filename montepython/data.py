@@ -427,7 +427,7 @@ class Data(object):
                 new_params = od()
                 split_params = self.param_options['split_params']
                 for key,val in self.parameters.items():
-                    if key not in split_params
+                    if key not in split_params:
                         new_params[key] = val
                     else:
                         key_high = '_'.join([key, 'high'])
@@ -440,7 +440,7 @@ class Data(object):
                         "Parameter that was asked to be split "
                         "was not included in the parameter file")
 
-                self.parameters = new_params        
+                self.parameters = new_params
 
         for key, value in dictitems(self.parameters):
             self.mcmc_parameters[key] = Parameter(value, key)

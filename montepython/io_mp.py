@@ -159,7 +159,6 @@ def log_parameter_names(data, command_line):
     log = open(os.path.join(command_line.folder, outname_base+'.paramnames'), 'w')
     # Create list of varying and derived parameters
     param = data.get_mcmc_parameters(['varying'])
-    print(param)
     for elem in data.get_mcmc_parameters(['derived']):
         param.append(elem)
     # New type of parameter, derived_lkl: this is a derived parameter calculated in the likelihood, and not known to CLASS. Added by D. C. Hooper
