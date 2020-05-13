@@ -424,25 +424,23 @@ class Data(object):
         if self.param_options:
             if self.param_options['split']:
                 self.cosmo_arguments['split'] = self.param_options['split']
-                for key in self.param_options['split_params']:
-                    if key not in self.parameters:
-                        raise io_mp.ConfigurationError(
-                        "Parameter that was asked to be split "
-                        "was not included in the parameter file")
+                new_params = od()
+                split_params = self.param_options['split_params']
+                for key,val in self.parameters.items():
+                    if key not in split_params
+                        new_params[key] = val
                     else:
                         key_high = '_'.join([key, 'high'])
                         key_low = '_'.join([key, 'low'])
-                        new_params = od()
-                        new_parameters = od()
-                        for key2, val in self.parameters.items():
-                            if key2 != key:
-                                new_parameters[key2] = val
-                            else:
-                                new_parameters[key_low] = val
-                                new_parameters[key_high] = deepcopy(val)
+                        new_params[key_low] = val
+                        new_params[key_high] = deepcopy(val)
+                        split_params.remove(key)
+                if len(split_params) != 0:
+                        raise io_mp.ConfigurationError(
+                        "Parameter that was asked to be split "
+                        "was not included in the parameter file")
 
-                        self.parameters = new_parameters
-                        print(self.parameters)
+                self.parameters = new_params        
 
         for key, value in dictitems(self.parameters):
             self.mcmc_parameters[key] = Parameter(value, key)
