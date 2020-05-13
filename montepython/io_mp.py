@@ -50,6 +50,7 @@ def log_parameters(data, command_line):
     """
     split = data.param_options['split']
 
+
     with open(os.path.join(command_line.folder, 'log.param'), 'w') as log:
         log.write("#-----{0} {1} (branch: {2}, hash: {3})-----\n\n".format(
             data.cosmological_module_name, data.version,
@@ -66,6 +67,8 @@ def log_parameters(data, command_line):
                         found_param = found_param[0]
 
                     if not found_param:
+                        log.write(line)
+                    elif 'param_options' in line:
                         log.write(line)
                     else:
                         line1 = line.replace(found_param, '_'.join([found_param, 'low']))

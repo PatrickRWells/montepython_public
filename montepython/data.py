@@ -12,7 +12,7 @@ import random as rd
 import warnings
 import subprocess as sp
 import re
-from copy import deepcopy
+from copy import deepcopy, copy
 
 import io_mp  # Needs to talk to io_mp.py file for the logging
                                # of parameters
@@ -425,7 +425,7 @@ class Data(object):
             if self.param_options['split']:
                 self.cosmo_arguments['split'] = self.param_options['split']
                 new_params = od()
-                split_params = self.param_options['split_params']
+                split_params = copy(self.param_options['split_params'])
                 for key,val in self.parameters.items():
                     if key not in split_params:
                         new_params[key] = val

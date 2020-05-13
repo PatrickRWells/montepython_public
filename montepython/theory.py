@@ -101,7 +101,7 @@ def Theory(base):
                 self.high_params = {}
                 self.high_spectra = {}
                 self.low_spectra = {}
-                
+
             super().struct_cleanup()
 
     return Theory()
