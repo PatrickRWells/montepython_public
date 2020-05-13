@@ -390,6 +390,7 @@ class Data(object):
         self.param_options = {}
 
         # Read from the parameter file everything
+
         try:
             self.param_file = open(self.param, 'r')
         except IOError:
@@ -402,6 +403,7 @@ class Data(object):
         if self.param.find('log.param') != -1:
             self.read_file(self.param, 'data', field='path')
         self.read_file(self.param, 'data')
+
         # Test here whether the number of parameters extracted correspond to
         # the number of lines (to make sure no doublon is present)
         number_of_parameters = sum(
@@ -416,16 +418,27 @@ class Data(object):
         # Do the same for every experiments - but only if you are starting a
         # new folder. Otherwise, this step will actually be done when
         # initializing the likelihood.
+
         if self.param.find('log.param') == -1:
             for experiment in self.experiments:
                 self.read_file(self.param, experiment, separate=True)
 
         # Finally create all the instances of the Parameter given the input.
+
         if self.param_options:
             if self.param_options['split']:
                 self.cosmo_arguments['split'] = self.param_options['split']
                 new_params = od()
-                split_params = copy(self.param_options['split_params'])
+                split_params = []
+                for key in self.param_options['split_params']:
+                    key_high = '_'.join([key, 'high'])
+                    key_low = '_'.join([key, 'low'])
+                    if key_high and key_low in self.parameters.keys():
+                        pass
+                    else:
+                        split_params.append(key)
+
+
                 for key,val in self.parameters.items():
                     if key not in split_params:
                         new_params[key] = val
@@ -436,9 +449,9 @@ class Data(object):
                         new_params[key_high] = deepcopy(val)
                         split_params.remove(key)
                 if len(split_params) != 0:
-                        raise io_mp.ConfigurationError(
-                        "Parameter that was asked to be split "
-                        "was not included in the parameter file")
+                    raise io_mp.ConfigurationError(
+                    "Parameter that was asked to be split "
+                    "was not included in the parameter file")
 
                 self.parameters = new_params
 
